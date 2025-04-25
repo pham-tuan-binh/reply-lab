@@ -1,0 +1,15 @@
+[project]
+name = "makeathon"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "fastkml[lxml]>=1.1.0",
+    "laspy>=2.5.4",
+    "matplotlib>=3.10.1",
+    "notebook>=7.4.1",
+    "numpy>=2.2.5",
+    "open3d>=0.19.0",
+    "opencv-python>=4.11.0.86",
+]
