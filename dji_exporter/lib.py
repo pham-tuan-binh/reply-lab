@@ -41,7 +41,15 @@ def edit_dji_kml_placemarks(kml_string, waypoints, author_name="Binh Pham"):
     # Update author and timestamps
     now = int(datetime.now().timestamp() * 1000)  # Current time in milliseconds
     
-    document = root.find('./kml:Document', ns) if root.tag.endswith('kml') else root.find('./Document')
+    # Find the Document element - try with namespace first, then without
+    document = None
+    if root.tag.endswith('kml'):
+        document = root.find('./kml:Document', ns)
+        if document is None:
+            document = root.find('./Document')
+    else:
+        document = root
+    
     if document is None:
         raise ValueError("Invalid KML structure: Document element not found")
     
@@ -58,13 +66,43 @@ def edit_dji_kml_placemarks(kml_string, waypoints, author_name="Binh Pham"):
     if update_time is not None:
         update_time.text = str(now)
     
-    # Find the Folder containing waypoints
-    folder = document.find('./kml:Folder', ns) or document.find('./Folder')
+    # Find the Folder containing waypoints - try multiple approaches
+    folder = None
+    
+    # Try with namespace first
+    folder = document.find('./kml:Folder', ns)
+    
+    # Then try without namespace
+    if folder is None:
+        folder = document.find('./Folder')
+    
+    # If still not found, try all children to find a Folder element
+    if folder is None:
+        for child in document:
+            if child.tag.endswith('Folder'):
+                folder = child
+                break
+    
     if folder is None:
         raise ValueError("Invalid KML structure: Folder element not found")
     
-    # Get the template placemark for cloning
-    template_placemark = folder.find('./kml:Placemark', ns) or folder.find('./Placemark')
+    # Get the template placemark for cloning - try multiple approaches
+    template_placemark = None
+    
+    # Try with namespace
+    template_placemark = folder.find('./kml:Placemark', ns)
+    
+    # Try without namespace
+    if template_placemark is None:
+        template_placemark = folder.find('./Placemark')
+    
+    # Try direct children
+    if template_placemark is None:
+        for child in folder:
+            if child.tag.endswith('Placemark'):
+                template_placemark = child
+                break
+    
     if template_placemark is None:
         raise ValueError("Invalid KML structure: No Placemark found to use as template")
     
@@ -77,18 +115,56 @@ def edit_dji_kml_placemarks(kml_string, waypoints, author_name="Binh Pham"):
         except:
             pass
     
+    # Find all existing Placemarks using multiple approaches
+    existing_placemarks = []
+    
+    # Try with namespace
+    ns_placemarks = folder.findall('./kml:Placemark', ns)
+    if ns_placemarks:
+        existing_placemarks.extend(ns_placemarks)
+    
+    # Try without namespace
+    non_ns_placemarks = folder.findall('./Placemark')
+    if non_ns_placemarks:
+        existing_placemarks.extend([p for p in non_ns_placemarks if p not in existing_placemarks])
+    
+    # Try direct children
+    for child in folder:
+        if child.tag.endswith('Placemark') and child not in existing_placemarks:
+            existing_placemarks.append(child)
+    
     # Remove all existing Placemarks
-    for placemark in folder.findall('./kml:Placemark', ns) or folder.findall('./Placemark'):
+    for placemark in existing_placemarks:
         folder.remove(placemark)
     
     # Add new placemarks for each waypoint
     for idx, waypoint in enumerate(waypoints):
         new_placemark = copy.deepcopy(template_placemark)
         
-        # Update coordinates
-        point = new_placemark.find('./kml:Point/kml:coordinates', ns) or new_placemark.find('./Point/coordinates')
+        # Update coordinates - try multiple approaches
+        point = None
+        
+        # Try with namespace
+        point = new_placemark.find('./kml:Point/kml:coordinates', ns)
+        
+        # Try without namespace
+        if point is None:
+            point = new_placemark.find('./Point/coordinates')
+        
+        # Try direct path
+        if point is None:
+            for point_elem in new_placemark.findall('.//*'):
+                if point_elem.tag.endswith('coordinates'):
+                    point = point_elem
+                    break
+        
         if point is not None:
             point.text = f"\n            {waypoint['lng']},{waypoint['lat']}\n          "
+        else:
+            # If no point element found, create one
+            point_elem = ET.SubElement(new_placemark, 'Point')
+            coords_elem = ET.SubElement(point_elem, 'coordinates')
+            coords_elem.text = f"\n            {waypoint['lng']},{waypoint['lat']}\n          "
         
         # Update index
         index_elem = new_placemark.find('./wpml:index', ns)
@@ -99,6 +175,10 @@ def edit_dji_kml_placemarks(kml_string, waypoints, author_name="Binh Pham"):
         height_elem = new_placemark.find('./wpml:height', ns)
         height = waypoint.get('height', global_height)
         if height_elem is not None:
+            height_elem.text = str(height)
+        else:
+            # Create height element if it doesn't exist
+            height_elem = ET.SubElement(new_placemark, 'wpml:height')
             height_elem.text = str(height)
         
         # Update ellipsoid height if exists
@@ -124,13 +204,35 @@ def edit_dji_kml_placemarks(kml_string, waypoints, author_name="Binh Pham"):
                 action_trigger = ET.SubElement(action_group, 'wpml:actionTrigger')
                 ET.SubElement(action_trigger, 'wpml:actionTriggerType').text = 'reachPoint'
             else:
-                # Clear any existing actions
-                for action in action_group.findall('./wpml:action', ns):
+                # Find and remove all existing actions
+                existing_actions = []
+                
+                # Try with namespace
+                ns_actions = action_group.findall('./wpml:action', ns)
+                if ns_actions:
+                    existing_actions.extend(ns_actions)
+                
+                # Try without namespace
+                non_ns_actions = action_group.findall('./action')
+                if non_ns_actions:
+                    existing_actions.extend([a for a in non_ns_actions if a not in existing_actions])
+                
+                # Try direct children
+                for child in action_group:
+                    if child.tag.endswith('action') and child not in existing_actions:
+                        existing_actions.append(child)
+                
+                # Remove all existing actions
+                for action in existing_actions:
                     action_group.remove(action)
                 
                 # Update action count
                 end_index = action_group.find('./wpml:actionGroupEndIndex', ns)
                 if end_index is not None:
+                    end_index.text = str(len(actions) - 1)
+                else:
+                    # Create end index element if it doesn't exist
+                    end_index = ET.SubElement(action_group, 'wpml:actionGroupEndIndex')
                     end_index.text = str(len(actions) - 1)
             
             # Add each action to the action group
@@ -330,4 +432,3 @@ def edit_kmz_placemarks(input_kmz_path, output_kmz_path, waypoints, author_name=
                     new_kmz.writestr(file, kmz.read(file))
     
     print(f"KMZ file saved to {output_kmz_path}")
-

@@ -5,6 +5,7 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
+    "enlighten>=1.14.1",
     "fastkml[lxml]>=1.1.0",
     "laspy>=2.5.4",
     "matplotlib>=3.10.1",
@@ -12,4 +13,5 @@ dependencies = [
     "numpy>=2.2.5",
     "open3d>=0.19.0",
     "opencv-python>=4.11.0.86",
+    "pycolmap>=3.11.1",
 ]

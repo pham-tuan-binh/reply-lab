@@ -1,0 +1,27 @@
+Log file created at: 2025/04/26 03:37:35
+Running on machine: DESKTOP-4T0CVVR
+Running duration (h:mm:ss): 0:00:04
+Log line format: [IWEF]yyyymmdd hh:mm:ss.uuuuuu threadid file:line] msg
+W20250426 03:37:35.030952 29128 feature_extraction.cc:390] Your current options use the maximum number of threads on the machine to extract features. Extracting SIFT features on the CPU can consume a lot of RAM per thread for large images. Consider reducing the maximum image size and/or the first octave or manually limit the number of extraction threads. Ignore this warning, if your machine has sufficient memory for the current settings.
+I20250426 03:37:35.032157  1984 misc.cc:44] 
+==============================================================================
+Feature extraction
+==============================================================================
+I20250426 03:37:35.032769 19480 sift.cc:727] Creating SIFT CPU feature extractor
+I20250426 03:37:35.032946 31080 sift.cc:727] Creating SIFT CPU feature extractor
+I20250426 03:37:35.033044 10420 sift.cc:727] Creating SIFT CPU feature extractor
+I20250426 03:37:35.033691 15300 sift.cc:727] Creating SIFT CPU feature extractor
+I20250426 03:37:35.033876  3444 sift.cc:727] Creating SIFT CPU feature extractor
+I20250426 03:37:35.033986 15784 sift.cc:727] Creating SIFT CPU feature extractor
+I20250426 03:37:35.034093  3276 sift.cc:727] Creating SIFT CPU feature extractor
+I20250426 03:37:35.034144 28212 sift.cc:727] Creating SIFT CPU feature extractor
+I20250426 03:37:35.034199 20476 sift.cc:727] Creating SIFT CPU feature extractor
+I20250426 03:37:35.034345 20432 sift.cc:727] Creating SIFT CPU feature extractor
+I20250426 03:37:35.034292 11864 sift.cc:727] Creating SIFT CPU feature extractor
+I20250426 03:37:35.034640 12000 sift.cc:727] Creating SIFT CPU feature extractor
+I20250426 03:37:35.034464 28864 sift.cc:727] Creating SIFT CPU feature extractor
+I20250426 03:37:35.034510  5728 sift.cc:727] Creating SIFT CPU feature extractor
+I20250426 03:37:35.034594 31436 sift.cc:727] Creating SIFT CPU feature extractor
+I20250426 03:37:35.034249 23844 sift.cc:727] Creating SIFT CPU feature extractor
+I20250426 03:37:36.360558 28472 feature_extraction.cc:258] Processed file [1/12]
+I20250426 03:37:36.360782 28472 feature_extraction.cc:261]   Name:            DJI_20250424193311_0165_V.jpeg
