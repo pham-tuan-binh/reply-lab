@@ -19,7 +19,6 @@ def edit_dji_kml_placemarks(kml_string, waypoints, author_name="Binh Pham"):
             'lat': 48.123, 
             'lng': 11.456, 
             'height': 20,  # optional
-            'actions': []  # optional list of action dictionaries
         }, ...]
     author_name : str
         Name of the author to set in the KML file
@@ -173,72 +172,18 @@ def edit_dji_kml_placemarks(kml_string, waypoints, author_name="Binh Pham"):
         
         # Update height if provided and element exists
         height_elem = new_placemark.find('./wpml:height', ns)
-        height = waypoint.get('height', global_height)
         if height_elem is not None:
-            height_elem.text = str(height)
-        else:
-            # Create height element if it doesn't exist
-            height_elem = ET.SubElement(new_placemark, 'wpml:height')
-            height_elem.text = str(height)
+            height_elem.text = str(global_height)
         
-        # Update ellipsoid height if exists
+        # Set ellipsoidHeight from waypoint['alt']
         ellipsoid_elem = new_placemark.find('./wpml:ellipsoidHeight', ns)
         if ellipsoid_elem is not None:
-            ellipsoid_elem.text = str(waypoint.get('elevation', 0) + float(height))
-        
-        # Handle actions if present
-        actions = waypoint.get('actions', [])
-        if actions and len(actions) > 0:
-            # Check if there's an existing action group we can modify
-            action_group = new_placemark.find('./wpml:actionGroup', ns)
-            
-            # If no action group exists, create one
-            if action_group is None:
-                action_group = ET.SubElement(new_placemark, 'wpml:actionGroup')
-                ET.SubElement(action_group, 'wpml:actionGroupId').text = '0'
-                ET.SubElement(action_group, 'wpml:actionGroupStartIndex').text = '0'
-                ET.SubElement(action_group, 'wpml:actionGroupEndIndex').text = str(len(actions) - 1)
-                ET.SubElement(action_group, 'wpml:actionGroupMode').text = 'sequence'
-                
-                # Add action trigger
-                action_trigger = ET.SubElement(action_group, 'wpml:actionTrigger')
-                ET.SubElement(action_trigger, 'wpml:actionTriggerType').text = 'reachPoint'
-            else:
-                # Find and remove all existing actions
-                existing_actions = []
-                
-                # Try with namespace
-                ns_actions = action_group.findall('./wpml:action', ns)
-                if ns_actions:
-                    existing_actions.extend(ns_actions)
-                
-                # Try without namespace
-                non_ns_actions = action_group.findall('./action')
-                if non_ns_actions:
-                    existing_actions.extend([a for a in non_ns_actions if a not in existing_actions])
-                
-                # Try direct children
-                for child in action_group:
-                    if child.tag.endswith('action') and child not in existing_actions:
-                        existing_actions.append(child)
-                
-                # Remove all existing actions
-                for action in existing_actions:
-                    action_group.remove(action)
-                
-                # Update action count
-                end_index = action_group.find('./wpml:actionGroupEndIndex', ns)
-                if end_index is not None:
-                    end_index.text = str(len(actions) - 1)
-                else:
-                    # Create end index element if it doesn't exist
-                    end_index = ET.SubElement(action_group, 'wpml:actionGroupEndIndex')
-                    end_index.text = str(len(actions) - 1)
-            
-            # Add each action to the action group
-            for i, action_data in enumerate(actions):
-                action_elem = create_action_element(action_data, i)
-                action_group.append(action_elem)
+            ellipsoid_elem.text = str(waypoint['alt'])
+
+        # Set ellipsoidHeight from waypoint['alt']
+        execute_height_elem = new_placemark.find('./wpml:executeHeight', ns)
+        if execute_height_elem is not None:
+            execute_height_elem.text = str(waypoint['alt'])
         
         # Add the new placemark
         folder.append(new_placemark)
@@ -251,143 +196,6 @@ def edit_dji_kml_placemarks(kml_string, waypoints, author_name="Binh Pham"):
     if not xml_content.startswith('<?xml'):
         return xml_declaration + xml_content
     return xml_content
-
-
-def create_action_element(action_data, action_id=0):
-    """
-    Create an XML Element for a DJI action
-    
-    Parameters:
-    -----------
-    action_data : dict
-        Dictionary containing action data
-    action_id : int
-        ID for this action
-        
-    Returns:
-    --------
-    xml.etree.ElementTree.Element
-        XML element for the action
-    """
-    action = ET.Element('wpml:action')
-    
-    # Set action ID
-    action_id_elem = ET.SubElement(action, 'wpml:actionId')
-    action_id_elem.text = str(action_data.get('id', action_id))
-    
-    # Set actuator function
-    actuator_func = ET.SubElement(action, 'wpml:actionActuatorFunc')
-    actuator_func.text = action_data['type']
-    
-    # Set actuator function parameters
-    actuator_params = ET.SubElement(action, 'wpml:actionActuatorFuncParam')
-    
-    # Add parameters based on action type
-    params = action_data.get('params', {})
-    
-    for key, value in params.items():
-        param_elem = ET.SubElement(actuator_params, f'wpml:{key}')
-        param_elem.text = str(value)
-    
-    return action
-
-
-# Action helper functions
-def create_rotate_yaw_action(heading, path_mode="counterClockwise"):
-    """Create a rotate yaw action"""
-    return {
-        'type': 'rotateYaw',
-        'params': {
-            'aircraftHeading': heading,
-            'aircraftPathMode': path_mode
-        }
-    }
-
-
-def create_gimbal_rotate_action(pitch_angle=None, roll_angle=None, yaw_angle=None,
-                               yaw_base="north", rotate_mode="absoluteAngle",
-                               payload_index=0):
-    """Create a gimbal rotate action"""
-    params = {
-        'gimbalHeadingYawBase': yaw_base,
-        'gimbalRotateMode': rotate_mode,
-        'payloadPositionIndex': payload_index,
-        'gimbalRotateTimeEnable': 0,
-        'gimbalRotateTime': 0
-    }
-    
-    # Add pitch parameters
-    params['gimbalPitchRotateEnable'] = 1 if pitch_angle is not None else 0
-    if pitch_angle is not None:
-        params['gimbalPitchRotateAngle'] = pitch_angle
-    
-    # Add roll parameters
-    params['gimbalRollRotateEnable'] = 1 if roll_angle is not None else 0
-    if roll_angle is not None:
-        params['gimbalRollRotateAngle'] = roll_angle
-    
-    # Add yaw parameters
-    params['gimbalYawRotateEnable'] = 1 if yaw_angle is not None else 0
-    if yaw_angle is not None:
-        params['gimbalYawRotateAngle'] = yaw_angle
-    
-    return {
-        'type': 'gimbalRotate',
-        'params': params
-    }
-
-
-def create_zoom_action(focal_length, use_focal_factor=False, payload_index=0):
-    """Create a zoom action"""
-    return {
-        'type': 'zoom',
-        'params': {
-            'focalLength': focal_length,
-            'isUseFocalFactor': 1 if use_focal_factor else 0,
-            'payloadPositionIndex': payload_index
-        }
-    }
-
-
-def create_take_photo_action(payload_index=0, use_global_payload_lens_index=True):
-    """Create a take photo action"""
-    return {
-        'type': 'takePhoto',
-        'params': {
-            'payloadPositionIndex': payload_index,
-            'useGlobalPayloadLensIndex': 1 if use_global_payload_lens_index else 0
-        }
-    }
-
-
-def create_start_record_action(payload_index=0):
-    """Create a start record action"""
-    return {
-        'type': 'startRecord',
-        'params': {
-            'payloadPositionIndex': payload_index
-        }
-    }
-
-
-def create_stop_record_action(payload_index=0):
-    """Create a stop record action"""
-    return {
-        'type': 'stopRecord',
-        'params': {
-            'payloadPositionIndex': payload_index
-        }
-    }
-
-
-def create_hover_action(hover_time):
-    """Create a hover action"""
-    return {
-        'type': 'hover',
-        'params': {
-            'hoverTime': hover_time
-        }
-    }
 
 
 def save_kml(kml_data, output_file_path):
