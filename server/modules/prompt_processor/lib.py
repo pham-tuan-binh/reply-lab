@@ -1,7 +1,7 @@
 from typing import List
 from pydantic import BaseModel
 import os
-from llm_manager import LLMManager
+from .llm_manager import LLMManager
 import json
 from dotenv import load_dotenv
 

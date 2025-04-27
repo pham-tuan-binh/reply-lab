@@ -9,6 +9,8 @@ import {
   Info,
   Terminal,
   ImageIcon,
+  Download,
+  Search,
 } from "lucide-react";
 
 interface MessageRendererProps {
@@ -18,7 +20,6 @@ interface MessageRendererProps {
 export function MessageRenderer({ message }: MessageRendererProps) {
   const { type, data } = message;
 
-  // Render based on message type
   switch (type) {
     case "status":
       return (
@@ -81,33 +82,18 @@ export function MessageRenderer({ message }: MessageRendererProps) {
       );
 
     case "data":
+      const downloadLink = `data:application/vnd.google-earth.kmz;base64,${data}`;
       return (
-        <div className="space-y-1">
-          <Badge variant="outline" className="mb-1 bg-zinc-800 text-zinc-300">
-            Telemetry Data
-          </Badge>
-          <div className="grid grid-cols-2 gap-2">
-            {Object.entries(data).map(([key, value]) => {
-              if (typeof value === "object" && value !== null) {
-                return (
-                  <div key={key} className="col-span-2 space-y-1">
-                    <p className="text-xs text-zinc-400">{key}:</p>
-                    <Code className="bg-zinc-900 text-xs">
-                      {JSON.stringify(value, null, 2)}
-                    </Code>
-                  </div>
-                );
-              }
-              return (
-                <div
-                  key={key}
-                  className="flex items-center justify-between bg-zinc-900 p-2"
-                >
-                  <span className="text-xs text-zinc-400">{key}</span>
-                  <span className="text-sm text-zinc-100">{String(value)}</span>
-                </div>
-              );
-            })}
+        <div className="space-y-2">
+          <div className="flex items-center gap-2">
+            <Download className="h-4 w-4 text-green-400" />
+            <a
+              href={downloadLink}
+              download="waylines.kmz"
+              className="text-sm text-green-300 underline"
+            >
+              Download Waylines.kmz
+            </a>
           </div>
         </div>
       );
@@ -129,8 +115,55 @@ export function MessageRenderer({ message }: MessageRendererProps) {
         </div>
       );
 
+    case "file":
+      return (
+        <div className="space-y-2">
+          <div className="flex items-center gap-2">
+            <Download className="h-4 w-4 text-green-400" />
+            <a
+              href={data}
+              download="waylines.kmz"
+              className="text-sm text-green-300 underline"
+            >
+              Download Waylines.kmz
+            </a>
+          </div>
+        </div>
+      );
+
+    case "prompt_analysis":
+      return (
+        <div className="space-y-2 bg-zinc-900 p-3 rounded">
+          <div className="text-cyan-300">Actor: {data[0]?.actor || "N/A"}</div>
+          <div className="text-cyan-300">
+            Action: {data[0]?.actions?.[0]?.action || "N/A"}
+          </div>
+          <div className="text-cyan-300">
+            Subjects:{" "}
+            {data[0]?.actions?.[0]?.subjects
+              ?.map((s: any) => s.subject)
+              .join(", ") || "N/A"}
+          </div>
+          <div className="text-cyan-300">
+            Conditions:{" "}
+            {data[1]?.actions?.[0]?.subjects
+              ?.map((s: any) => s.subject)
+              .join(", ") || "N/A"}
+          </div>
+        </div>
+      );
+
+    case "kmz_generation":
+      return (
+        <div className="flex items-start gap-2">
+          <Download className="mt-0.5 h-4 w-4 text-purple-400" />
+          <div>
+            <p className="text-purple-200">{data}</p>
+          </div>
+        </div>
+      );
+
     default:
-      // Default renderer for unknown types
       return (
         <div>
           <p className="text-zinc-100">

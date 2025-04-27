@@ -26,7 +26,7 @@ export default function Home() {
                     </svg>
                   </div>
                 </div>
-                <h1 className="text-2xl font-bold tracking-tight">Areon</h1>
+                <h1 className="text-2xl font-bold tracking-tight">Aeron</h1>
               </div>
               <div className="flex items-center gap-2">
                 <div className="h-2 w-2 rounded-full bg-green-500"></div>

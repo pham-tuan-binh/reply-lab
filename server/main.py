@@ -7,7 +7,8 @@ import asyncio
 import json
 import os
 from fastapi.middleware.cors import CORSMiddleware
-from modules.prompt_processor.lib import process_user_input
+from modules import process_user_input, generate_kmz, drone_object_detection
+import base64
 
 app = FastAPI()
 # Allow frontend running on localhost:3000
@@ -26,27 +27,51 @@ async def process_uploads(websocket: WebSocket, upload_dir: str, prompt: str, fi
     """Simple function to process uploaded files and send updates via websocket"""
     try:
         # Send processing started message
-        await websocket.send_text(json.dumps({
-            "status": "processing",
-            "message": "Processing started",
-            "files": files,
-            "prompt": prompt
-        }))
         
         # Add your actual processing logic here
         # This is where you'd handle the files based on the prompt
+        print(f"Processing files: {files} with prompt: {prompt}")
+        print(f"Files are located in: {upload_dir}")
+        # replace print and add after it
+
+        image_dir = Path(upload_dir)
+        label_dir = image_dir  / "labels"
+        output_dir = image_dir.parent / "output"
+
+        label_dir.mkdir(exist_ok=True)
+        output_dir.mkdir(exist_ok=True)
+
+        # Payload
+        payload = {
+            "type": "drone_object_detection",
+            "data": "Drone object detection in progress..."
+        }
+
+        await websocket.send_text(json.dumps(payload))
+
+        drone_object_detection(image_dir, label_dir)
+
+        # Payload
+        payload = {
+            "type": "kmz_generation",
+            "data": "KMZ generation in progress..."
+        }
+
+        await websocket.send_text(json.dumps(payload))
+
+        # Generate KMZ file
+        generate_kmz(image_dir, label_dir, output_dir)
+
+        output_file = output_dir / "Group14.kmz"
         
-        # For demonstration, just wait a moment
-        await asyncio.sleep(1)
-        
-        # Send completion message
+        with open(output_file, "rb") as f:
+            encoded = base64.b64encode(f.read()).decode()
+
         await websocket.send_text(json.dumps({
-            "status": "processed",
-            "message": "Processing complete",
-            "upload_dir": upload_dir,
-            "files": files,
-            "prompt": prompt
+            "type": "data",
+            "data": encoded
         }))
+
         
     except Exception as e:
         await websocket.send_text(json.dumps({
@@ -74,21 +99,26 @@ async def websocket_endpoint(websocket: WebSocket):
                 
                 if data.startswith("PROMPT:"):
                     prompt = data.replace("PROMPT:", "").strip()
-                    await websocket.send_text(f"Prompt received: {prompt}")
+                    analysis = process_user_input(prompt)  # Call the LLM processing function
+
+                    payload = {
+                        "type": "prompt_analysis",
+                        "data": analysis
+                    }
+
+                    await websocket.send_text(json.dumps(payload))
                 
                 elif data.startswith("FILENAME:"):
                     # Close any previously open file writer
                     if file_writer:
                         file_writer.close()
                         file_writer = None
-                        await websocket.send_text(f"Completed upload of {current_file}")
                         uploaded_files.append(current_file)
                     
                     filename = data.replace("FILENAME:", "").strip()
                     save_path = UPLOAD_DIR / filename
                     file_writer = save_path.open("wb")
                     current_file = filename
-                    await websocket.send_text(f"Started receiving {filename}")
                 
                 elif data == "UPLOAD_COMPLETE":
                     # Close the current file if one is open
@@ -97,7 +127,6 @@ async def websocket_endpoint(websocket: WebSocket):
                         file_writer = None
                         if current_file:
                             uploaded_files.append(current_file)
-                            await websocket.send_text(f"Completed upload of {current_file}")
                             current_file = None
                     
                     # Create a session folder for this upload batch
@@ -113,10 +142,8 @@ async def websocket_endpoint(websocket: WebSocket):
                     
                     # Send initial response
                     await websocket.send_text(json.dumps({
-                        "status": "upload_complete",
-                        "upload_dir": session_dir,
-                        "files": uploaded_files,
-                        "prompt": prompt
+                        "type": "success",
+                        "data": f"Files uploaded successfully to {session_dir}",
                     }))
                     
                     # Process uploads directly (no background task)

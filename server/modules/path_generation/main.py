@@ -14,21 +14,21 @@ def generate_kmz(image_path, label_path, output_path):
                     bboxes.append({"class_id": int(class_id), "x_center": x, "y_center": y, "width": w_, "height": h_})
             image_bbox_list.append((img_name, bboxes))
 
-    # # Extracting SIFT Features
-    # print("Extracting SIFT features...")
-    # pycolmap.set_random_seed(0)
-    # pycolmap.extract_features(DATABASE_PATH, image_path)
+    # Extracting SIFT Features
+    print("Extracting SIFT features...")
+    pycolmap.set_random_seed(0)
+    pycolmap.extract_features(DATABASE_PATH, image_path)
 
-    # # Match Sift Features
-    # print("Matching SIFT features...")
-    # pycolmap.match_exhaustive(DATABASE_PATH)
+    # Match Sift Features
+    print("Matching SIFT features...")
+    pycolmap.match_exhaustive(DATABASE_PATH)
 
-    # # Incremental Mapping for Sparse Reconstruction
-    # print("Incremental Mapping for Sparse Reconstruction...")
-    # reconstruction = incremental_mapping_with_pbar(DATABASE_PATH, image_path, RECONSTRUCTION_PATH)[0]
+    # Incremental Mapping for Sparse Reconstruction
+    print("Incremental Mapping for Sparse Reconstruction...")
+    reconstruction = incremental_mapping_with_pbar(DATABASE_PATH, image_path, RECONSTRUCTION_PATH)[0]
 
     # If you already have a reconstruction, you can load it
-    reconstruction = pycolmap.Reconstruction(os.path.join(RECONSTRUCTION_PATH, "0"))
+    # reconstruction = pycolmap.Reconstruction(os.path.join(RECONSTRUCTION_PATH, "0"))
 
     # Triangulate candidate points
     print("Triangulating candidate points...")

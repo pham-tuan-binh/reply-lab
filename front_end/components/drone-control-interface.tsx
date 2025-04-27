@@ -55,7 +55,7 @@ export default function DroneControlInterface() {
     {
       id: "welcome",
       sender: "drone",
-      text: "Welcome to Areon. I'm ready to assist with your drone operations.",
+      text: "Welcome to Aeron. I'm ready to assist with your drone operations.",
       timestamp: new Date(),
     },
   ]);
