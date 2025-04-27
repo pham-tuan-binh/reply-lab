@@ -107,57 +107,6 @@ def fit_point_to_rays(rays):
     b = np.sum(b, axis=0)
     return np.linalg.lstsq(A, b, rcond=None)[0]  # least-squares point
 
-def triangulate_candidates_lstsq(lines, num_samples=10000, rays_per_sample=5, threshold=0.1):
-    candidates = []
-    centers = [tuple(C) for C, _ in lines]
-    for _ in range(num_samples):
-        sample = []
-        used_centers = set()
-        while len(sample) < rays_per_sample:
-            C, d = random.choice(lines)
-            if tuple(C) in used_centers:
-                continue
-            used_centers.add(tuple(C))
-            sample.append((C, d))
-        point = fit_point_to_rays(sample)
-        # optional: reject if too far from sample rays
-        if all(np.linalg.norm(np.cross(d, point - C)) < threshold for C, d in sample):
-            candidates.append(point)
-    return np.array(candidates)
-
-def find_all_points(lines, threshold, min_support=5, max_mean_distance=1.0):
-    points = []
-    
-    for i, (C0, d0) in enumerate(lines):
-        candidates = []
-        for j, (C1, d1) in enumerate(lines):
-            if i == j:
-                continue
-            n = np.cross(d0, d1)
-            if np.linalg.norm(n) < 1e-6:
-                continue
-            n /= np.linalg.norm(n)
-            A = np.stack([d0, -d1, n], axis=1)
-            b = C1 - C0
-            x = np.linalg.lstsq(A, b, rcond=None)[0]
-            p = C0 + d0 * x[0]
-            candidates.append((j, p))
-        
-        if not candidates:
-            continue
-        
-        idxs, pts = zip(*candidates)
-        pts = np.stack(pts)
-        mean = np.mean(pts, axis=0)
-        dists = np.linalg.norm(pts - mean, axis=1)
-        support = np.array(idxs)[dists < threshold]
-
-        if len(support) >= min_support:
-            mean_distance = np.mean(dists[dists < threshold])
-            if mean_distance <= max_mean_distance:
-                points.append(mean)
-
-    return points
 
 # Similarity Helper Functions
 def estimate_similarity_transform(source, target):

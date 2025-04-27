@@ -1,5 +1,5 @@
 from pathlib import Path
-from modules import generate_kmz, parse_drone_command
+from modules import generate_kmz, parse_drone_command, drone_object_detection
 
 
 # Get the current working directory
@@ -10,7 +10,7 @@ TEST_DIR = WORKING_DIR / "data" / "test"
 IMAGE_DIR = TEST_DIR/ "images"
 LABEL_DIR = TEST_DIR / "labels"
 
-TEST_OUTPUT_DIR = WORKING_DIR / "output"
+TEST_OUTPUT_DIR = TEST_DIR / "output"
 
-# Get kmz
+drone_object_detection(IMAGE_DIR, LABEL_DIR)
 generate_kmz(IMAGE_DIR, LABEL_DIR, TEST_OUTPUT_DIR)
