@@ -53,3 +53,7 @@ npm run dev
 Inside notebooks, you'll find path_gen folder, it contains a single jupyter notebook, alongside the data used to run it.
 
 This is a detailed-ish code from Binh to develop the 3D triangulation pipeline. It contains everything from sfm sparse reconstruction to how to map local world coords to ecef.
+
+# Licence
+
+Code compliant to TUM hackathon challenge.
