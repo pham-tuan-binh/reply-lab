@@ -1,59 +1,132 @@
-# Makeathon 2025: Reply Challenge Submission - Aeron
+# Aeron - Autonomous Drone Mapping via Natural Language
 
-This project was done during Tum.ai Makeathon's 2025. The challenge was building a autonomous drone mapping generation system, with natural language input. In short, give a command and a set of images, return 3D coordinates for drone to fly to.
+**Submission for the Reply Challenge @ TUM.ai Makeathon 2025**
+
+Aeron is a system developed during the TUM.ai Makeathon 2025 that enables autonomous drone mapping generation using natural language commands. Given a voice prompt and a set of drone-captured images, Aeron calculates the necessary 3D coordinates for the drone to navigate to specified points of interest.
 
 https://github.com/user-attachments/assets/30bfbee1-e394-4eeb-8693-658ccf7d4a9c
 
-Author:
+---
 
-- **Binh The Bro**: Handles everything related to drone 3D mapping, sfm and point triangulation (colmap and just linear algebra). Handles the web app (nextjs), server (fastapi) and kmz file generation for dji drones.
-- **Akshay The Bro**: Handles mlops pipeline, object detection (RT-DETR) and object matching (Hungarian Algo and cost matrix).
-- **Isha The Sis**: Handles natural language pipeline, data annotation and kmz file generation.
-- **Vercel's v0**: Built a website that has 1000 dependencies error that bro Binh can only fix partially but solid contribution.
+## Table of Contents
 
-# Project Dependencies
+* [Team](#team)
+* [Features](#features)
+* [Project Structure](#project-structure)
+* [Prerequisites](#prerequisites)
+* [Getting Started](#getting-started)
+    * [Backend Setup](#backend-setup)
+    * [Frontend Setup](#frontend-setup)
+* [Notebooks](#notebooks)
+* [License](#license)
 
-To run this project, you must have:
+---
 
-- uv: for python env and deps management. You can check the installation here: https://docs.astral.sh/uv/getting-started/installation/
-- npm and node: for js server side execution and package management (aka the frontend). https://docs.npmjs.com/downloading-and-installing-node-js-and-npm
+## Team
 
-# Project Structure
+* **Binh**: 3D Mapping (SfM, COLMAP, Triangulation), Web App (Next.js), Server (FastAPI), KMZ File Generation (DJI).
+* **Akshay**: MLOps Pipeline, Object Detection (RT-DETR), Object Matching (Hungarian Algorithm).
+* **Isha**: Natural Language Processing Pipeline, Data Annotation, KMZ File Generation.
+* *(Initial UI scaffolding generated using Vercel v0, subsequently integrated and extended.)*
 
-In this repository, you'll find:
+---
 
-- /back_end: to be run with uv
-- /front_end: to be run with npm
-- /notebooks: the research behind this project, helpful for those who want to understand 3D triangulation.
-- /results: end result for the challenge
+## Features
 
-# Back End
+* **Natural Language Interface:** Control drone mapping tasks using voice commands.
+* **3D Mapping Pipeline:** Utilizes Structure from Motion (SfM) and point triangulation (COLMAP, custom linear algebra) for sparse reconstruction.
+* **Object Detection:** Identifies relevant objects in drone imagery using RT-DETR.
+* **Coordinate Generation:** Maps local world coordinates to ECEF and generates KMZ files for DJI drone navigation.
+* **Web Interface:** Provides a user interface for interaction (image upload, prompt input).
+* **Real-time Communication:** Uses FastAPI backend with WebSocket for seamless interaction.
 
-The back end is a fast api server with one primary websocket endpoint. Through this endpoint, user can upload files and send prompts without interuption.
+---
 
-In this directory, you can find main.py as the main execution point, test.py for testing the 3d pipeline test, /modules for every part of the pipeline.
-
-To run back end, you just need to:
-
+## Project Structure
 ```
-uv run back_end/main.py
+.
+├── back_end/         # FastAPI server application
+│   ├── main.py       # Main execution point (FastAPI app)
+│   ├── test.py       # Script for testing the 3D pipeline
+│   └── modules/      # Core pipeline modules (NLP, CV, 3D, etc.)
+├── front_end/        # React.js web application
+│   └── ...           # Next.js project files
+├── notebooks/        # Research, experiments, and pipeline development
+│   └── path_gen/     # Jupyter notebook detailing 3D triangulation pipeline
+│       └── ...       # Notebook and associated data
+├── results/          # Stores final output files (e.g., KMZ) for the challenge
+└── README.md         # This file
 ```
+---
 
-# Front End
+## Prerequisites
 
-The front end is a simple reactjs web app made by Vercel v0, upgraded with api controls from a human. Therefore. instead of using npm install, you need to use:
+Ensure you have the following installed on your system:
 
-```
-npm install --force
-npm run dev
-```
+1.  **uv:** A fast Python package installer and resolver.
+    * Installation guide: [https://docs.astral.sh/uv/getting-started/installation/](https://docs.astral.sh/uv/getting-started/installation/)
+2.  **Node.js and npm:** Required for running the frontend application.
+    * Installation guide: [https://docs.npmjs.com/downloading-and-installing-node-js-and-npm](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm)
 
-# Notebooks
+---
 
-Inside notebooks, you'll find path_gen folder, it contains a single jupyter notebook, alongside the data used to run it.
+## Getting Started
 
-This is a detailed-ish code from Binh to develop the 3D triangulation pipeline. It contains everything from sfm sparse reconstruction to how to map local world coords to ecef.
+Follow these steps to set up and run the project:
 
-# Licence
+### Backend Setup
 
-Code compliant to TUM hackathon challenge.
+The backend is a FastAPI server managed with `uv`.
+
+1.  **Navigate to the backend directory:**
+    ```bash
+    cd back_end
+    ```
+2.  **Create a virtual environment and install dependencies (uv handles this):**
+    *(Assuming a `pyproject.toml` file exists defining dependencies)*
+    ```bash
+    uv venv  # Create virtual environment (if not already done)
+    uv pip install -r requirements.txt # Or install based on pyproject.toml if configured
+    ```
+    *(Note: Adjust the install command based on how dependencies are defined, e.g., `uv pip install .` if defined in `pyproject.toml`)*
+
+3.  **Run the FastAPI server:**
+    ```bash
+    uv run main.py
+    # Or if using uvicorn directly within the uv environment:
+    # uv run uvicorn main:app --reload
+    ```
+    The server will start, typically on `http://127.0.0.1:8000`.
+
+### Frontend Setup
+
+The frontend is a React.js application (initially scaffolded with Vercel v0).
+
+1.  **Navigate to the frontend directory:**
+    ```bash
+    cd front_end
+    ```
+2.  **Install dependencies:**
+    * *Due to potential dependency conflicts inherited from the v0 generation, the `--force` flag might be necessary.*
+    ```bash
+    npm install --force
+    ```
+3.  **Run the development server:**
+    ```bash
+    npm run dev
+    ```
+    The application should open in your browser, typically at `http://localhost:3000`.
+
+---
+
+## Notebooks
+
+The `/notebooks` directory contains research and development artifacts.
+
+* **/notebooks/path_gen:** Includes a Jupyter Notebook developed by Binh, detailing the 3D triangulation pipeline. This covers SfM sparse reconstruction and mapping local world coordinates to ECEF, providing insights into the 3D mapping process used in Aeron.
+
+---
+
+## License
+
+This project adheres to the rules and regulations set forth by the TUM.ai Makeathon 2025 challenge.
