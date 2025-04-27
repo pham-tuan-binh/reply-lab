@@ -7,7 +7,7 @@ https://github.com/user-attachments/assets/30bfbee1-e394-4eeb-8693-658ccf7d4a9c
 Author:
 
 - **Binh The Bro**: Handles everything related to drone 3D mapping, sfm and point triangulation (colmap and just linear algebra). Handles the web app (nextjs), server (fastapi) and kmz file generation for dji drones.
-- **Akshay The Bro**: Handles mlops pipeline, object detection (Yolov11) and object matching (Hungarian Algo and cost matrix).
+- **Akshay The Bro**: Handles mlops pipeline, object detection (RT-DETR) and object matching (Hungarian Algo and cost matrix).
 - **Isha The Sis**: Handles natural language pipeline, data annotation and kmz file generation.
 - **Vercel's v0**: Built a website that has 1000 dependencies error that bro Binh can only fix partially but solid contribution.
 
