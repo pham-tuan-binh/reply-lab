@@ -2,7 +2,7 @@
 
 This project was done during Tum.ai Makeathon's 2025. The challenge was building a autonomous drone mapping generation system, with natural language input. In short, give a command and a set of images, return 3D coordinates for drone to fly to.
 
-![](./media/Aeron-Demo-Video.mp4)
+https://github.com/user-attachments/assets/30bfbee1-e394-4eeb-8693-658ccf7d4a9c
 
 Author:
 
