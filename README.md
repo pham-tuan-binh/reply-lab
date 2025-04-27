@@ -2,7 +2,7 @@
 
 This project was done during Tum.ai Makeathon's 2025. The challenge was building a autonomous drone mapping generation system, with natural language input. In short, give a command and a set of images, return 3D coordinates for drone to fly to.
 
-![](./just_a.gif)
+![](./media/Aeron-Demo-Video.mp4)
 
 Author:
 
@@ -14,6 +14,7 @@ Author:
 # Project Dependencies
 
 To run this project, you must have:
+0
 
 - uv: for python env and deps management. You can check the installation here: https://docs.astral.sh/uv/getting-started/installation/
 - npm and node: for js server side execution and package management (aka the frontend). https://docs.npmjs.com/downloading-and-installing-node-js-and-npm
