@@ -1,1 +1,0 @@
-from .kmz_gen import waypoints_to_kmz

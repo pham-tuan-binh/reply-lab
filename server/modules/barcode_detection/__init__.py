@@ -1,1 +1,0 @@
-from .detection import drone_object_detection

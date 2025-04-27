@@ -66,6 +66,8 @@ export async function sendMessageToApi(
         const fileMessage: StreamMessage = { type: "file", data: url };
         onStreamMessage?.(fileMessage);
         collectedMessages.push(fileMessage);
+        ws.close();
+        resolve({ messages: collectedMessages, status: "success" });
       }
     };
 
