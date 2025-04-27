@@ -7,6 +7,7 @@ import asyncio
 import json
 import os
 from fastapi.middleware.cors import CORSMiddleware
+from modules.prompt_processor.lib import process_user_input
 
 app = FastAPI()
 # Allow frontend running on localhost:3000
@@ -142,6 +143,15 @@ async def websocket_endpoint(websocket: WebSocket):
         if file_writer:
             file_writer.close()
         await websocket.close()
+
+# create an api to call llm model
+@app.post("/ai_chat")
+async def ai_chat(user_query: str):
+    """Process a command using the LLM and return the structured data."""
+    try:
+        return process_user_input(user_query)
+    except Exception as e:
+        return {"error": f"An error occurred: {str(e)}"}
 
 # Add a route to check server status
 @app.get("/health")

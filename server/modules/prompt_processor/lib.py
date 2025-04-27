@@ -1,66 +1,42 @@
-# from typing import List
-# from pydantic import BaseModel
-# from openai import OpenAI
+from typing import List
+from pydantic import BaseModel
+import os
+from llm_manager import LLMManager
+import json
+from dotenv import load_dotenv
 
-# # Define the structured output models
-# class Subject(BaseModel):
-#     subject: str
-#     conditions: List[str]
+load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), "../../", ".env"))
 
-# class Action(BaseModel):
-#     action: str
-#     subjects: List[Subject]
 
-# class Actor(BaseModel):
-#     actor: str
-#     actions: List[Action]
+GEMINI_LLM_MODEL = os.getenv("GEMINI_LLM_MODEL")
 
-# from dotenv import load_dotenv
-# import os
-# from openai import OpenAI
+llm_manager = LLMManager(model_name=GEMINI_LLM_MODEL, temperature=0.0, verbose=True)
 
-# load_dotenv()  # Load from .env file
-# client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-# # Define the command to be parsed
-# command = "Drone Alpha should survey the northern sector if visibility is clear."
+# Define the structured output models
+class Subject(BaseModel):
+    subject: str
+    conditions: List[str]
 
-# # Create the completion with structured output parsing
-# completion = client.beta.chat.completions.parse(
-#     model="gpt-4o-2024-08-06",
-#     messages = [
-#         {"role": "system", "content": (
-#             "You are a drone command interpreter.\n"
-#             "Extract structured data:\n"
-#             "- actor: entity performing actions (e.g., 'Drone Alpha')\n"
-#             "- action: specific operation to perform (e.g., 'survey', 'capture')\n"
-#             "- subject: target or object of the action (e.g., 'northern sector', 'building roof')\n"
-#             "- condition: situation under which action applies (e.g., 'if visibility is clear')\n"
-#             "Structure output strictly according to the provided schema."
-#         )},
-#         {"role": "user", "content": command}
-#     ],
-#     response_format=List[Actor]
-# )
+class Action(BaseModel):
+    action: str
+    subjects: List[Subject]
 
-# def parse_drone_command(command: str):
-#     completion = client.beta.chat.completions.parse(
-#         model="gpt-4o-2024-08-06",
-#         messages=[
-#             {"role": "system", "content": (
-#                 "You are a drone command interpreter.\n"
-#                 "Extract structured data:\n"
-#                 "- actor: entity performing actions\n"
-#                 "- action: specific operation\n"
-#                 "- subject: target or object of the action\n"
-#                 "- condition: situation under which action applies\n"
-#                 "Output format: List of Actor objects."
-#             )},
-#             {"role": "user", "content": command}
-#         ],
-#         response_format=List[Actor]
-#     )
-#     return completion.choices[0].message.parsed
+class Actor(BaseModel):
+    actor: str
+    actions: List[Action]
 
-def parse_drone_command(command: str):
-    pass
+client = llm_manager.model
+
+# write a function to accept user input and return the response
+def process_user_input(user_query: str) -> dict:
+    """Process a command using the LLM and return the structured data."""
+    try:
+        response = client.infer(
+            prompt=user_query,
+            response_schema=Actor
+        )
+        return json.loads(response.text)
+    except Exception as e:
+        print(f"Error processing user input: {str(e)}")
+        return {"error": str(e)}
